@@ -3,15 +3,17 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const http = require('http');
+require('dotenv').config();
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var app = express();
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+// view engine setup         teb3a dossier views
+//app.set('views', path.join(__dirname, 'views'));
+//app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -35,7 +37,10 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.json('error');
 });
 
-module.exports = app;
+//module.exports = app;   na7ineha khater ken yranni ala dossier bin/www
+const server = http.createServer(app); //configurina serveur mte3na bech yekhdem bel http
+server.listen(5000,()=>{console.log('app is running on port 5000')}); //serveur 7attineh yemchi 3al port 5000(generalement port 5000 mta3 developpement back w 3000 front)
+// najmou n7otou process.env.PORT fi blaset 5000
