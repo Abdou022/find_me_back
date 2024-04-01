@@ -31,8 +31,7 @@ router.get('/sortByRating',prod.sortByRating);
 router.get('/sortByRatingDec',prod.sortByRatingDec);
 
 // Create new product
-router.post('/addProduct', prod.addProduct);
-router.post('/addProd', upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 4 }]),prod.addProd);
+router.post('/addProduct', upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 4 }]),prod.addProduct);
 
 // Delete Product
 router.delete('/deleteProduct/:id', prod.deleteProduct);
