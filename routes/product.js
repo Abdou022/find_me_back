@@ -1,6 +1,7 @@
 var express = require('express');
-const prod = require('../controllers/productController');
 var router = express.Router();
+const prod = require('../controllers/productController');
+const upload = require('../middlewares/uploadFile');
 
 // Get All products
 router.get('/getAllProducts', prod.getAllProducts);
@@ -31,6 +32,7 @@ router.get('/sortByRatingDec',prod.sortByRatingDec);
 
 // Create new product
 router.post('/addProduct', prod.addProduct);
+router.post('/addProd', upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 4 }]),prod.addProd);
 
 // Delete Product
 router.delete('/deleteProduct/:id', prod.deleteProduct);

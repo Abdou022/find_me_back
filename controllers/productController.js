@@ -189,3 +189,37 @@ module.exports.sortByRatingDec = async (req, res, next) => {
     }
 };
 
+module.exports.addProd = async (req, res, next) => {
+    try{
+        const thumbnail = req.files['thumbnail'][0].filename; //fil postman nemchiw lel body w n7otou form data moch raw w ndakhlou esemi image_user, email, password...
+        const images = req.files['images'].map(file => file.filename);
+        const {name, price, rating, barcode, color, description, size} = req.body; //tnajem ta3mel const nom = req.body.nom;
+        if (!name) {
+            return res.status(200).json({message: "Name required"});//7attina 200 khater kif bech njiw bech na3mlou liaison bel front 7achetna bech yraje3 true
+        }
+        if (!price) {
+            return res.status(200).json({message: "Price required"});
+        }
+        if (!barcode) {
+            return res.status(200).json({message: "Barcode required"});
+        }
+        if (!thumbnail) {
+            return res.status(200).json({message: "Image required"});
+        }
+        const product = new productModel({
+          name,
+          price,
+          rating,
+          barcode,
+          color,
+          description,
+          size,
+          thumbnail,
+          images
+        });
+        const addedProduct= await product.save();
+        res.status(201).json(addedProduct);
+      }catch(error){
+        res.status(500).json({message: error.message});
+      }
+}
