@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 const brand = require('../controllers/brandController');
 
-// Get All products
+// Get All Brands
 router.get('/getAllBrands', brand.getAllBrands);
 
 // Get Brand By id
@@ -17,8 +17,7 @@ router.post('/addBrand',brand.addBrand);
 //Delete Brand
 router.delete('/deleteBrand/:id',brand.deleteBrand);
 
-//Update Brand
-// Update Product
+// Update Brand
 router.put('/updateBrand/:id', brand.updateBrand); 
 
 module.exports = router;
