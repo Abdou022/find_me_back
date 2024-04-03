@@ -1,0 +1,1 @@
+const shopModel = require('../models/shopModel');
