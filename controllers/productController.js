@@ -1,4 +1,5 @@
 const productModel = require('../models/productModel');
+const Brand = require('../models/brandModel')
 
 
 module.exports.getAllProducts = async (req, res, next) => {
@@ -81,7 +82,7 @@ module.exports.addProduct = async (req, res, next) => {
     try{
         const thumbnail = req.files['thumbnail'][0].filename; //fil postman nemchiw lel body w n7otou form data moch raw w ndakhlou esemi image_user, email, password...
         const images = req.files['images'].map(file => file.filename);
-        const {name, price, rating, barcode, color, description, size} = req.body; //tnajem ta3mel const nom = req.body.nom;
+        const {name, price, rating, barcode, color, description, size, brand_id} = req.body; //tnajem ta3mel const nom = req.body.nom;
         if (!name) {
             return res.status(200).json({message: "Name required"});//7attina 200 khater kif bech njiw bech na3mlou liaison bel front 7achetna bech yraje3 true
         }
@@ -94,6 +95,10 @@ module.exports.addProduct = async (req, res, next) => {
         if (!thumbnail) {
             return res.status(200).json({message: "Image required"});
         }
+        if (!brand_id) {
+            return res.status(200).json({message: "Enter valid Brand id"});
+        }
+        const brand_name = await Brand.findById(brand_id)
         const product = new productModel({
           name,
           price,
@@ -103,9 +108,11 @@ module.exports.addProduct = async (req, res, next) => {
           description,
           size,
           thumbnail,
-          images
+          images,
+          brand:brand_name.name
         });
         const addedProduct= await product.save();
+        await Brand.findByIdAndUpdate(brand_id, { $push: { products: product._id } });
         res.status(201).json(addedProduct);
       }catch(error){
         res.status(500).json({message: error.message});
@@ -120,17 +127,20 @@ module.exports.deleteProduct = async (req, res, next) => {
         throw new Error("Product not found");
       }
       await productModel.findByIdAndDelete(id);
-  
-      res.status(200).json("deleted");
+      await Brand.updateMany({}, { $pull: { products: checkIfProductExists._id } });
+      res.status(200).json("Deleted Product!");
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
 };
 
-module.exports.updateProduct = async (req, res, next) => {
+module.exports.updateProduct = async (req, res, next) => { //ne9sa modifications fil tsawer
     try {
         const { id }= req.params;
         const {name, price ,rating, barcode, color, description, size} = req.body;
+        //const thumbnail = req.files['thumbnail'][0].filename;
+        //const images = req.files['images'].map(file => file.filename);
+
         const checkIfProductExists = await productModel.findById(id);
       if (!checkIfProductExists) {
         throw new Error("Product not found");
@@ -138,12 +148,12 @@ module.exports.updateProduct = async (req, res, next) => {
       updatedProduct = await productModel.findByIdAndUpdate(
         id,
         {
-            $set : {name, price ,rating, barcode, color, description, size},
+            $set : {name, price ,rating, barcode, color, description, size/*, thumbnail, images*/},
         },
         { new: true}
         );
 
-        res.status(200).json("updated");
+        res.status(200).json("Updated Product!");
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

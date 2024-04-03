@@ -10,6 +10,7 @@ const {connectToMongoDB } = require('./db/db'); //accolades 7atinehom khater bec
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var productRouter = require('./routes/product');
+var brandRouter = require('./routes/brand');
 
 var app = express();
 
@@ -26,6 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/products', productRouter);
+app.use('/brands', brandRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

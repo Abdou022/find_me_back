@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const brand = require('./brandModel');
 
 const productSchema = new mongoose.Schema(
     {
@@ -11,6 +12,7 @@ const productSchema = new mongoose.Schema(
      color: String,
      description: String,
      size: String,
+     brand: {type: mongoose.Schema.Types.String,ref:'Brand', required: true}
     },{timestamps:true} //kif t7ot timestamps: true tala3lek fil base mongo created at w updated at, dima n7otouha mel mosta7sen
 );
 
