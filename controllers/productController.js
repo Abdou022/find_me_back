@@ -1,5 +1,6 @@
 const productModel = require('../models/productModel');
-const Brand = require('../models/brandModel')
+const Brand = require('../models/brandModel');
+const Shop = require('../models/shopModel');
 
 
 module.exports.getAllProducts = async (req, res, next) => {
@@ -68,7 +69,7 @@ module.exports.getProductsByColor = async (req, res, next) => {
         if (!color) {
             throw new Error("Please provide a color to search for");
         }
-        const productList = await productModel.find({ color: { $regex: new RegExp(color, 'i') } });
+        const productList = await productModel.find({ colors: { $regex: new RegExp(color, 'i') } });
         if (!productList || productList.length === 0) {
             throw new Error("No products found with the specified color");
         }
@@ -82,7 +83,7 @@ module.exports.addProduct = async (req, res, next) => {
     try{
         const thumbnail = req.files['thumbnail'][0].filename; //fil postman nemchiw lel body w n7otou form data moch raw w ndakhlou esemi image_user, email, password...
         const images = req.files['images'].map(file => file.filename);
-        const {name, price, rating, barcode, color, description, size, brand_id} = req.body; //tnajem ta3mel const nom = req.body.nom;
+        const {name, price, rating, barcode, colors, description, size, brand_id, /*shops_id*/} = req.body; //tnajem ta3mel const nom = req.body.nom;
         if (!name) {
             return res.status(200).json({message: "Name required"});//7attina 200 khater kif bech njiw bech na3mlou liaison bel front 7achetna bech yraje3 true
         }
@@ -98,13 +99,17 @@ module.exports.addProduct = async (req, res, next) => {
         if (!brand_id) {
             return res.status(200).json({message: "Enter valid Brand id"});
         }
+        /*if (!shops_id) {
+            return res.status(200).json({message: "Enter valid Shops id"});
+        }*/
         const brand_name = await Brand.findById(brand_id)
+
         const product = new productModel({
           name,
           price,
           rating,
           barcode,
-          color,
+          colors,
           description,
           size,
           thumbnail,
@@ -128,6 +133,7 @@ module.exports.deleteProduct = async (req, res, next) => {
       }
       await productModel.findByIdAndDelete(id);
       await Brand.updateMany({}, { $pull: { products: checkIfProductExists._id } });
+      await Shop.updateMany({}, { $pull : { products: checkIfProductExists._id } });
       res.status(200).json("Deleted Product!");
     } catch (err) {
       res.status(500).json({ message: err.message });
@@ -137,7 +143,7 @@ module.exports.deleteProduct = async (req, res, next) => {
 module.exports.updateProduct = async (req, res, next) => { //ne9sa modifications fil tsawer
     try {
         const { id }= req.params;
-        const {name, price ,rating, barcode, color, description, size} = req.body;
+        const {name, price ,rating, barcode, colors, description, size} = req.body;
         //const thumbnail = req.files['thumbnail'][0].filename;
         //const images = req.files['images'].map(file => file.filename);
 
@@ -148,7 +154,7 @@ module.exports.updateProduct = async (req, res, next) => { //ne9sa modifications
       updatedProduct = await productModel.findByIdAndUpdate(
         id,
         {
-            $set : {name, price ,rating, barcode, color, description, size/*, thumbnail, images*/},
+            $set : {name, price ,rating, barcode, colors, description, size/*, thumbnail, images*/},
         },
         { new: true}
         );

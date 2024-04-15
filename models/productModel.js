@@ -9,10 +9,11 @@ const productSchema = new mongoose.Schema(
      barcode: {type: Number, unique: true},
      thumbnail: {type:String,required: true},
      images: {type:[String], required: true},
-     color: String,
+     colors: [String],
      description: String,
      size: String,
-     brand: {type: mongoose.Schema.Types.String,ref:'Brand', required: true}
+     brand: {type: mongoose.Schema.Types.String,ref:'Brand', required: true},
+     shops: [{type: mongoose.Schema.Types.String,ref:'Shop'}]
     },{timestamps:true} //kif t7ot timestamps: true tala3lek fil base mongo created at w updated at, dima n7otouha mel mosta7sen
 );
 
