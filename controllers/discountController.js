@@ -54,6 +54,7 @@ module.exports.addDiscount = async (req, res, next) => {
 
         // Check if a discount with the provided value already exists
         const existingDiscount = await discountModel.findOne({ value });
+         
 
         if (existingDiscount) {
             // If the discount exists, update it by adding the product IDs
