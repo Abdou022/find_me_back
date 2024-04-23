@@ -50,11 +50,18 @@ module.exports.getCategoryByName = async (req, res, next) => { //fil postman req
 
 module.exports.addCategory = async (req, res, next) => {
     try{
-        const {name, products} = req.body; //tnajem ta3mel const nom = req.body.nom;
+        const {name, /*products*/} = req.body; //tnajem ta3mel const nom = req.body.nom;
         if (!name) {
             return res.status(200).json({message: "Name required"});//7attina 200 khater kif bech njiw bech na3mlou liaison bel front 7achetna bech yraje3 true
         }
-        const category = new categoryModel({name, products});
+        const category = new categoryModel({name, /*products*/});
+        /*await Promise.all(products.map(async productId => {
+            const product = await Product.findById(productId);
+            if (product) {
+                product.category.push(name);
+                await product.save();
+            }
+        }));*/
         const addedCategory= await category.save();
         res.status(201).json(addedCategory);
       }catch(error){
@@ -69,7 +76,7 @@ module.exports.deleteCategory = async (req, res, next) => {
       if (!checkIfCategoryExists) {
         throw new Error("Category not found");
       }
-      //await Product.deleteMany({ brand: checkIfBrandExists.name }) //tfasakh tous les produits du brand supprime
+      await Product.updateMany({ category: checkIfCategoryExists.name }, { $pull: { category: checkIfCategoryExists.name } }); //tfasakh tous les produits du brand supprime
       await categoryModel.findByIdAndDelete(id);
   
       res.status(200).json("Deleted Category!");
@@ -93,9 +100,68 @@ module.exports.updateCategoryName = async (req, res, next) => {
         },
         { new: true}
         );
-        //await Product.updateMany({brand: checkIfBrandExists.name}, { $set: { brand: name } });
+        await Product.updateMany({"category": checkIfCategoryExists.name}, { $push: { "category": updatedCategory.name } });
+        await Product.updateMany({"category": checkIfCategoryExists.name}, { $pull: { "category": checkIfCategoryExists.name } });
         res.status(200).json("Updated Category!");
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+
+module.exports.addProductsToCategory = async (req, res, next) => {
+    try {
+        const { id }= req.params;
+        const {products} = req.body;
+        const checkIfCategoryExists = await categoryModel.findById(id);
+      if (!checkIfCategoryExists) {
+        throw new Error("Category not found");
+      }
+      updatedCategory = await categoryModel.findByIdAndUpdate(
+        id,
+        {
+            $push : {products},
+        },
+        { new: true}
+        );
+        //await Product.updateMany({brand: checkIfBrandExists.name}, { $set: { brand: name } });
+        await Promise.all(products.map(async productId => {
+          const product = await Product.findById(productId);
+          if (product) {
+              product.category.push(updatedCategory.name);
+              await product.save();
+          }
+      }));
+        res.status(200).json("Added Products to the Category!");
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+  };
+
+  module.exports.deleteProductsFromCategory = async (req, res, next) => {
+    try {
+        const { id }= req.params;
+        const {products} = req.body;
+        const checkIfCategoryExists = await categoryModel.findById(id);
+      if (!checkIfCategoryExists) {
+        throw new Error("Category not found");
+      }
+      updatedCategory = await categoryModel.findByIdAndUpdate(
+        id,
+        {
+          $pull: { products: { $in: products } }
+        },
+        { new: true}
+        );
+        //await Product.updateMany({brand: checkIfBrandExists.name}, { $set: { brand: name } });
+        await Promise.all(products.map(async productId => {
+          const product = await Product.findById(productId);
+          if (product) {
+              product.category.pull(updatedCategory.name);
+              await product.save();
+          }
+      }));
+        res.status(200).json("Deleted Products from the Category!");
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+  };

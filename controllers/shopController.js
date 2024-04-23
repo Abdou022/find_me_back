@@ -50,7 +50,7 @@ module.exports.getShopByName = async (req, res, next) => { //fil postman requete
 
   module.exports.addShop = async (req, res, next) => {
     try{
-        const {name, city, region,coordinates, products} = req.body; //tnajem ta3mel const nom = req.body.nom;
+        const {name, city, region,coordinates, /*products*/} = req.body; //tnajem ta3mel const nom = req.body.nom;
         if (!name) {
             return res.status(200).json({message: "Name required"});//7attina 200 khater kif bech njiw bech na3mlou liaison bel front 7achetna bech yraje3 true
         }
@@ -64,16 +64,16 @@ module.exports.getShopByName = async (req, res, next) => { //fil postman requete
             return res.status(200).json({message: "coordinates required"});//7attina 200 khater kif bech njiw bech na3mlou liaison bel front 7achetna bech yraje3 true
         }
         
-        const shop = new shopModel({name, city, region, coordinates, products});
+        const shop = new shopModel({name, city, region, coordinates, /*products*/});
         const addedShop= await shop.save();
         // nzidou fazet shop fil shops mta3 product
-        await Promise.all(products.map(async productId => {
+        /*await Promise.all(products.map(async productId => {
           const product = await Product.findById(productId);
           if (product) {
               product.shops.push(addedShop.name);
               await product.save();
           }
-      }));
+      }));*/
         res.status(201).json(addedShop);
       }catch(error){
         res.status(500).json({message: error.message});
