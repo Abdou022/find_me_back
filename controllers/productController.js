@@ -1,7 +1,13 @@
 const productModel = require('../models/productModel');
 const Brand = require('../models/brandModel');
 const Shop = require('../models/shopModel');
+const cloudinary = require('cloudinary').v2;
 
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_API_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 module.exports.getAllProducts = async (req, res, next) => {
     try {
@@ -31,10 +37,10 @@ module.exports.getProductById = async (req, res, next) => { //
 module.exports.getProductByName = async (req, res, next) => { //fil postman requete tkoun http://localhost:5000/products/getProductByName?name=necklace
     try {
         const {name} = req.query;
-        if (!name) 
+        /*if (!name) 
         {
             throw new Error("Please enter the product name to search");
-        }
+        }*/
         const productList = await productModel.find(
             {
                 name:{$regex: name,$options:"i"},
@@ -44,6 +50,7 @@ module.exports.getProductByName = async (req, res, next) => { //fil postman requ
         {
             throw new Error("Product not found!");
         }
+        //console.log(productList.length);
         res.status(200).json(productList);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -102,7 +109,23 @@ module.exports.addProduct = async (req, res, next) => {
         /*if (!shops_id) {
             return res.status(200).json({message: "Enter valid Shops id"});
         }*/
-        const brand_name = await Brand.findById(brand_id)
+        const brand_name = await Brand.findById(brand_id);
+        // Upload thumbnail to Cloudinary
+        /*console.log("hi");
+        const thumbnailResult = await cloudinary.uploader.upload(thumbnail,function(err,result){
+            if(err){
+                console.log(err.message);  
+                return res.status(404).json("erreeeeeeeur");
+            }
+        });
+        const thumbnailUrl = thumbnailResult.secure_url;
+        console.log("thumbnailUrl");
+ 
+        // Upload images to Cloudinary and extract their URLs
+        const imageUrls = await Promise.all(images.map(async (image) => {
+            const result = await cloudinary.uploader.upload(image);
+            return result.secure_url;
+        }));*/
 
         const product = new productModel({
           name,
@@ -221,3 +244,36 @@ module.exports.sortByRatingDec = async (req, res, next) => {
     }
 };
 
+module.exports.searchProductsWithFilter = async (req, res, next) =>{
+    try{
+        let query = {};
+
+        //Filter
+        if(req.body.region){
+            query.region= req.body.region;
+        }
+        if(req.body.colors){
+            query.colors= { $in: req.body.colors };
+        }
+        if(req.body.size){
+            query.size= { $in: req.body.size };
+        }
+        //Sort
+        let sortCriteria = {};
+        if (req.body.sortBy) {
+            sortCriteria[req.body.sortBy] = req.body.sortOrder === 'desc' ? -1 : 1;
+        }
+        //search
+        if (req.body.name) {
+            query.name =  { $regex: req.body.name, $options: "i" } ;
+        }
+        //Fetching Products
+        const productList = await productModel.find(query)
+            .sort(sortCriteria)
+            //.populate('shops') tnajamch t7otha khater .populate tekhou fil paramtere ken type id
+            console.log(productList.length);
+        res.status(200).json(productList);
+    }catch(error){
+        res.status(500).json({ message: error.message });
+    }
+}
