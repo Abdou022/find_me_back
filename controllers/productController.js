@@ -2,6 +2,9 @@ const productModel = require('../models/productModel');
 const Brand = require('../models/brandModel');
 const Shop = require('../models/shopModel');
 const cloudinary = require('cloudinary').v2;
+const { validationResult } = require('express-validator');
+const dotenv = require('dotenv')
+dotenv.config()
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_API_NAME,
@@ -88,12 +91,13 @@ module.exports.getProductsByColor = async (req, res, next) => {
 
 module.exports.addProduct = async (req, res, next) => {
     try{
-        const thumbnail = req.files['thumbnail'][0].filename; //fil postman nemchiw lel body w n7otou form data moch raw w ndakhlou esemi image_user, email, password...
-        const images = req.files['images'].map(file => file.filename);
+        //
+        //const thumbnail = req.files['thumbnail'][0].filename; //fil postman nemchiw lel body w n7otou form data moch raw w ndakhlou esemi image_user, email, password...
+        //const images = req.files['images'].map(file => file.filename);
         const {name, price, rating, barcode, colors, description, size, brand_id, /*shops_id*/} = req.body; //tnajem ta3mel const nom = req.body.nom;
-        if (!name) {
-            return res.status(200).json({message: "Name required"});//7attina 200 khater kif bech njiw bech na3mlou liaison bel front 7achetna bech yraje3 true
-        }
+        //if (!name) {
+        //    return res.status(200).json({message: "Name required"});//7attina 200 khater kif bech njiw bech na3mlou liaison bel front 7achetna bech yraje3 true
+        /*}
         if (!price) {
             return res.status(200).json({message: "Price required"});
         }
@@ -105,6 +109,29 @@ module.exports.addProduct = async (req, res, next) => {
         }
         if (!brand_id) {
             return res.status(200).json({message: "Enter valid Brand id"});
+        }*/ ///////////////////////////////////////////////////////////////////////////
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        // Handle image upload
+        let thumbnail;
+        if (req.files['thumbnail'][0]) {
+            thumbnail = await cloudinary.uploader.upload(req.files['thumbnail'][0].path);
+        }
+        let images = [];
+        // Handle multiple image uploads
+        if (req.files['images']) {
+            const imagesFiles = req.files['images'].map(file => file.path);
+
+            if (imagesFiles && imagesFiles.length > 0) {
+                for (const file of imagesFiles) {
+                    const uploadedImage = await cloudinary.uploader.upload(file);
+                    images.push(uploadedImage.secure_url);
+                }
+            }
+
         }
         /*if (!shops_id) {
             return res.status(200).json({message: "Enter valid Shops id"});
@@ -135,8 +162,8 @@ module.exports.addProduct = async (req, res, next) => {
           colors,
           description,
           size,
-          thumbnail,
-          images,
+          thumbnail: thumbnail ? thumbnail.secure_url : null,
+          images: images.length > 0 ? images : null,
           brand:brand_name.name
         });
         const addedProduct= await product.save();
@@ -247,16 +274,22 @@ module.exports.sortByRatingDec = async (req, res, next) => {
 module.exports.searchProductsWithFilter = async (req, res, next) =>{
     try{
         let query = {};
-
+        const test1="";
         //Filter
         if(req.body.region){
-            query.region= req.body.region;
+            const shopList = await Shop.find({ region: req.body.region }); // Retrieve shops in the specified region
+            const shopNames = shopList.map(shop => shop.name); // Extract shop names
+            query.shops = { $in: shopNames }; // Filter products based on shop IDs in the specified region
         }
         if(req.body.colors){
             query.colors= { $in: req.body.colors };
         }
         if(req.body.size){
-            query.size= { $in: req.body.size };
+            if( JSON.stringify(req.body.size) === JSON.stringify([])){
+                
+            }else{
+                query.size= { $in: req.body.size };
+            }
         }
         //Sort
         let sortCriteria = {};
@@ -270,7 +303,7 @@ module.exports.searchProductsWithFilter = async (req, res, next) =>{
         //Fetching Products
         const productList = await productModel.find(query)
             .sort(sortCriteria)
-            //.populate('shops') tnajamch t7otha khater .populate tekhou fil paramtere ken type id
+            //.populate('shops') //tnajamch t7otha khater .populate tekhou fil paramtere ken type id
             console.log(productList.length);
         res.status(200).json(productList);
     }catch(error){

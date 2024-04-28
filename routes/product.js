@@ -31,8 +31,8 @@ router.get('/sortByRating',prod.sortByRating);
 router.get('/sortByRatingDec',prod.sortByRatingDec);
 
 //Search With Filter
-router.get('/searchProductsWithFilter',prod.searchProductsWithFilter);
-
+router.post('/searchProductsWithFilter',prod.searchProductsWithFilter);
+ 
 // Create new product
 router.post('/addProduct', upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 5 }]),prod.addProduct);
 
