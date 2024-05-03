@@ -18,6 +18,9 @@ router.get('/getShopsByCity', shop.getShopsByCity);
 // Get All Shops With Specified Region
 router.get('/getShopsByRegion', shop.getShopsByRegion);
 
+// Calculate Distance
+router.get('/CalculateDistance',shop.CalculateDistance);
+
 // Add Shop
 router.post('/addShop',shop.addShop);
 

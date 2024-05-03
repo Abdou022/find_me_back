@@ -212,3 +212,54 @@ module.exports.deleteProductsFromShop = async (req, res, next) => {
       res.status(500).json({ message: error.message });
   }
 };
+
+module.exports.CalculateDistance = async (req, res, next) => {
+  try {
+    const { lat, long } = req.body; // Assuming you pass lat and long of user's location in the request body
+
+    if (!lat || !long) {
+      return res.status(400).json({ message: "Latitude and Longitude are required." });
+    }
+
+    const shops = await shopModel.find(); // Retrieve all shops
+
+    if (!shops || shops.length === 0) {
+      return res.status(404).json({ message: "No shops found." });
+    }
+
+    // Calculate distances for each shop
+    const shopsWithDistance = shops.map((shop) => {
+      const shopLat = shop.coordinates.latitude;
+      const shopLong = shop.coordinates.longitude;
+
+      // Using Haversine formula to calculate distance between two points on Earth
+      const R = 6371; // Radius of Earth in kilometers
+      const dLat = (shopLat - lat) * (Math.PI / 180);
+      const dLon = (shopLong - long) * (Math.PI / 180);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat * (Math.PI / 180)) *
+          Math.cos(shopLat * (Math.PI / 180)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const distance = R * c; // Distance in kilometers
+
+      return {
+        _id: shop._id,
+        name: shop.name,
+        city: shop.city,
+        region: shop.region,
+        distance: distance.toFixed(2), // Round distance to 2 decimal places
+        coordinates: {
+          latitude: shopLat,
+          longitude: shopLong,
+        },
+      };
+    });
+    shopsWithDistance.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+    res.status(200).json({ shops: shopsWithDistance });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
