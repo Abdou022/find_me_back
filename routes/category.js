@@ -8,6 +8,9 @@ router.get('/getAllCategories', category.getAllCategories);
 // Get Category By id
 router.get('/getCategory/:id', category.getCategoryById);
 
+// Get Category Products By id
+router.get('/getCategoryProducts/:id', category.getCategoryProducts);
+
 // Get Category By name
 router.get('/getCategoryByName', category.getCategoryByName);
 

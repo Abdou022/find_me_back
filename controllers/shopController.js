@@ -3,7 +3,7 @@ const Product = require('../models/productModel');
 
 module.exports.getAllShops = async (req, res, next) => {
     try {
-      const shopList = await shopModel.find();// .populate('owner') tjiblek fi west postman cellule mta3 owner kemla moch ken id mte3ou
+      const shopList = await shopModel.find();//.populate('products');// .populate('owner') tjiblek fi west postman cellule mta3 owner kemla moch ken id mte3ou
       if (!shopList) {
         throw new Error("Shop not found");
       }
@@ -16,7 +16,7 @@ module.exports.getAllShops = async (req, res, next) => {
   module.exports.getShopById = async (req, res, next) => { // 
     try {
       const { id } = req.params;
-      const shop = await shopModel.findById(id);
+      const shop = await shopModel.findById(id).populate('products');
       if (!shop) {
         throw new Error("Shop not found");
       }
@@ -25,6 +25,39 @@ module.exports.getAllShops = async (req, res, next) => {
       res.status(500).json({ message: err.message });
     }
 }; 
+
+module.exports.getShopProducts = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const shop = await shopModel.findById(id).populate('products');
+
+    if (!shop) {
+      throw new Error("Shop not found");
+    }
+
+    // Extract the product details
+    const products = shop.products.map((product) => {
+      return {
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        rating: product.rating,
+        barcode: product.barcode,
+        thumbnail: product.thumbnail,
+        images: product.images,
+        colors: product.colors,
+        description: product.description,
+        size: product.size,
+        brand: product.brand,
+        category: product.category,
+      };
+    });
+
+    res.status(200).json({prods: products});
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
 module.exports.getShopByName = async (req, res, next) => { //fil postman requete tkoun http://localhost:5000/products/getProductByName?name=necklace
     try {
@@ -37,7 +70,7 @@ module.exports.getShopByName = async (req, res, next) => { //fil postman requete
             {
                 name:{$regex: name,$options:"i"},
             }
-        ); //await nista3mlouha kif nabda bech ne5thou donnees mel base de donnees
+        );//.populate('products'); //await nista3mlouha kif nabda bech ne5thou donnees mel base de donnees
         if (!shopList) 
         {
             throw new Error("Shop not found!");

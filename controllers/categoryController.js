@@ -3,7 +3,7 @@ const Product = require('../models/productModel');
 
 module.exports.getAllCategories = async (req, res, next) => {
     try {
-      const categoryList = await categoryModel.find().populate('products');// .populate('owner') tjiblek fi west postman cellule mta3 owner kemla moch ken id mte3ou
+      const categoryList = await categoryModel.find();//.populate('products');// .populate('owner') tjiblek fi west postman cellule mta3 owner kemla moch ken id mte3ou
       if (!categoryList) {
         throw new Error("Category not found");
       }
@@ -25,6 +25,38 @@ module.exports.getAllCategories = async (req, res, next) => {
       res.status(500).json({ message: err.message });
     }
 }; 
+
+module.exports.getCategoryProducts = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const category = await categoryModel.findById(id).populate('products');
+
+    if (!category) {
+      throw new Error("Category not found");
+    }
+
+    // Extract the product details
+    const products = category.products.map((product) => {
+      return {
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        rating: product.rating,
+        barcode: product.barcode,
+        thumbnail: product.thumbnail,
+        images: product.images,
+        colors: product.colors,
+        description: product.description,
+        size: product.size,
+        brand: product.brand,
+      };
+    });
+
+    res.status(200).json({prods: products});
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
 module.exports.getCategoryByName = async (req, res, next) => { //fil postman requete tkoun http://localhost:5000/products/getProductByName?name=necklace
     try {
