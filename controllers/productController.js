@@ -1,6 +1,7 @@
 const productModel = require('../models/productModel');
 const Brand = require('../models/brandModel');
 const Shop = require('../models/shopModel');
+const Category = require('../models/categoryModel');
 const cloudinary = require('cloudinary').v2;
 const { validationResult } = require('express-validator');
 const dotenv = require('dotenv')
@@ -194,6 +195,7 @@ module.exports.deleteProduct = async (req, res, next) => {
       await productModel.findByIdAndDelete(id);
       await Brand.updateMany({}, { $pull: { products: checkIfProductExists._id } });
       await Shop.updateMany({}, { $pull : { products: checkIfProductExists._id } });
+      await Category.updateMany({}, { $pull : { products: checkIfProductExists._id } });
       res.status(200).json("Deleted Product!");
     } catch (err) {
       res.status(500).json({ message: err.message });
