@@ -15,6 +15,8 @@ const productSchema = new mongoose.Schema(
      brand: {type: mongoose.Schema.Types.String,ref:'Brand', required: true},
      shops: [{type: mongoose.Schema.Types.String,ref:'Shop'}],
      category: [{type: mongoose.Schema.Types.String,ref:'Category'}],
+     discountPrice: {type: Number, default:-1},
+     searched: {type: Number, default:0},
     },{timestamps:true} //kif t7ot timestamps: true tala3lek fil base mongo created at w updated at, dima n7otouha mel mosta7sen
 );
 

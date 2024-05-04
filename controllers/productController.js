@@ -31,6 +31,8 @@ module.exports.getProductById = async (req, res, next) => { //
       if (!product) {
         throw new Error("Product not found");
       }
+      product.searched += 1;
+      await product.save();
       res.status(200).json(product);
     } catch (err) {
       res.status(500).json({ message: err.message });
@@ -64,9 +66,17 @@ module.exports.getProductByBarCode = async (req, res, next) => { //
     try {
         const { barcode } = req.query;
       const product = await productModel.find({barcode})
-      if (!product) {
+      if (!product || product.length === 0) {
         throw new Error("Product not found");
       }
+  
+      // Increment the 'searched' field by 1 for each product found
+      for (let i = 0; i < product.length; i++) {
+        product[i].searched += 1;
+        await product[i].save();
+      }
+      /*product.searched += 1;
+      await product.save();*/
       res.status(200).json(product);
     } catch (err) {
       res.status(500).json({ message: err.message });
