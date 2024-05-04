@@ -2,9 +2,9 @@ const discountModel = require('../models/discountModel');
 
 module.exports.getAllDiscounts = async (req, res, next) => {
     try {
-      const discountList = await discountModel.find().populate('sale_products');// .populate('owner') tjiblek fi west postman cellule mta3 owner kemla moch ken id mte3ou
+      const discountList = await discountModel.find();//.populate('sale_products');// .populate('owner') tjiblek fi west postman cellule mta3 owner kemla moch ken id mte3ou
       if (!discountList) {
-        throw new Error("Discount not found");
+        throw new Error("Discounts not found");
       }
       res.status(200).json(discountList);
     } catch (err) {
@@ -28,7 +28,7 @@ module.exports.getAllDiscounts = async (req, res, next) => {
 module.exports.getDiscountByValue = async (req, res, next) => { // 
     try {
         const { value } = req.params;
-      const discount = await discountModel.find({value})
+      const discount = await discountModel.findOne({value})
       if (!discount) {
         throw new Error("Discount not found");
       }
