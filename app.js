@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const http = require('http');
 require('dotenv').config();
+const cors = require('cors');
 const {connectToMongoDB } = require('./db/db'); //accolades 7atinehom khater bech n'importiw fnct wala akther
 
 var indexRouter = require('./routes/index');
@@ -14,6 +15,7 @@ var brandRouter = require('./routes/brand');
 var shopRouter = require('./routes/shop');
 var discountRouter = require('./routes/discount');
 var categoryRouter = require('./routes/category');
+var authRouter = require('./routes/auth')
 
 var app = express();
 
@@ -26,6 +28,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -34,6 +37,7 @@ app.use('/brands', brandRouter);
 app.use('/shops',shopRouter);
 app.use('/discounts', discountRouter);
 app.use('/categories', categoryRouter);
+app.use('/auth', authRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
