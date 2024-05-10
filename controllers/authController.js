@@ -45,6 +45,9 @@ module.exports.create_account = async (req, res) => {
         }
         
         let image;
+        if (!req.file){
+          return res.status(400).json({ status: false, message: 'Add Profile Picture!' });
+        }
         if (req.file) {
             image = (await cloudinary.uploader.upload(req.file.path)).secure_url;
         }
@@ -74,18 +77,22 @@ module.exports.create_account = async (req, res) => {
         // Generate JWT token
         const payload = {
             id: newUser._id,
-            role: newUser.role
+            role: newUser.role,
+            name: newUser.username,
+            email: newUser.email,
+            image: newUser.image,
         };
 
-        jwt.sign(
+        token = jwt.sign(
             payload,
             process.env.NET_SECRET,
-            { expiresIn: '10m' }, // Token expires in 5 minutes
-            (err, token) => {
-                if (err) throw err;
-                res.status(200).json({ status: true, token });
-            }
-        );
+            { expiresIn: '3m' }, // Token expires in 2 minutes
+            );
+        return res.status(200).json({
+      status: true,
+      message: `Your account is successfully created, now please activate it`,
+      token
+    });
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ status: false, message: 'Server error' });
@@ -155,7 +162,8 @@ module.exports.otpVerification = async (req, res) => {
                         await userOTPVerificaticationModel.deleteMany({ userId })
                         res.status(200).json({
                             status: true,
-                            message: "User email verified successfully "
+                            message: "User email verified successfully ",
+                            
                         })
                     }
                 }
@@ -211,9 +219,9 @@ module.exports.login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, email: user.email, image: user.image, role: user.role, name: user.username },
+      { id: user._id, email: user.email, image: user.image, role: user.role, name: user.username, activated: user.activated },
       process.env.NET_SECRET,
-      { expiresIn: '10m' }
+      { expiresIn: '2m' }
     );
     return res.status(200).json({
       status: true,
@@ -231,31 +239,11 @@ module.exports.login = async (req, res) => {
     return res.status(500).json({
       status: false,
       message: error.message,
+      activated: true
     });
   }
 };
 
-module.exports.logout = async (req, res) => {
-  try {
-    // const id = req.session.user._id;
-    // // Utilisez findById pour trouver l'utilisateur par son ID
-    // const user = await userModel.findById(id);
-    // console.log(user);
-
-    res.cookie('jwt_token', '', { httpOnly: false, maxAge: 1 });
-    req.session.destroy();
-    res.status(200).json({
-      status: true,
-      message: 'User successfully logged out',
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      status: false,
-      message: error.message,
-    });
-  }
-};
 
 module.exports.addProductTofavorites = async (req, res, next) => {
   try{
