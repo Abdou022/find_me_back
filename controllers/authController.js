@@ -86,7 +86,7 @@ module.exports.create_account = async (req, res) => {
         token = jwt.sign(
             payload,
             process.env.NET_SECRET,
-            { expiresIn: '3m' }, // Token expires in 2 minutes
+            { expiresIn: '30m' }, // Token expires in 2 minutes
             );
         return res.status(200).json({
       status: true,
@@ -221,7 +221,7 @@ module.exports.login = async (req, res) => {
     const token = jwt.sign(
       { id: user._id, email: user.email, image: user.image, role: user.role, name: user.username, activated: user.activated },
       process.env.NET_SECRET,
-      { expiresIn: '2m' }
+      { expiresIn: '30m' }
     );
     return res.status(200).json({
       status: true,
@@ -244,81 +244,49 @@ module.exports.login = async (req, res) => {
   }
 };
 
-
-module.exports.addProductTofavorites = async (req, res, next) => {
+module.exports.addToFavorites = async (req,res) => {
+  const  userId = req.userId;
+  const prodId = req.body.prodId;
   try{
-    const {userId, prodId}  = req.body;
-  if (!userId) {
-    res.status(400).json("Can't find user id");
-  }
-  
-  if (!prodId) {
-    res.status(400).json("Can't find product id");
-  }
-  const user = await userModel.findById(userId);
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
-  }
+    const user = await userModel.findById(userId);
+    const alreadyAdded = user.favorites.find((id)=>id.toString()=== prodId);
+    if(alreadyAdded){
+      let user = await userModel.findByIdAndUpdate(userId, 
+        {$pull: { favorites: prodId}},
+        {new: true,});
 
-  // Check if the product is already in favorites
-  if (user.favorites.includes(prodId)) {
-    return res.status(400).json({ message: 'Product already in favorites' });
+    res.status(200).json({
+      status: true,
+      message: "Product deleted from favorites.",
+      user: user
+    });
+    }else {
+      let user = await userModel.findByIdAndUpdate(userId, 
+        {$push: { favorites: prodId}},
+        {new: true,});
+        
+    res.status(200).json({
+      status: true,
+      message: "Product added to favorites.",
+      user: user
+    });
+    }
+  }catch(error){
+    res.status(500).json({
+      status: false,
+      message: error.message
+    })
   }
-
-  // Add the product ID to the favorites array
-  user.favorites.push(prodId);
-
-  // Save the updated user
-  await user.save();
-  return res.status(200).json({ message: 'Product added to favorites' });
-
-  }catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
-module.exports.deleteProductFromfavorites = async (req, res, next) => {
-  try{
-    const {userId, prodId}  = req.body;
-  if (!userId) {
-    res.status(400).json("Can't find user id");
-  }
-  
-  if (!prodId) {
-    res.status(400).json("Can't find product id");
-  }
-  const user = await userModel.findById(userId);
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
-  }
-
-  // Check if the product is already in favorites
-  if (!(user.favorites.includes(prodId))) {
-    return res.status(400).json({ message: "Product doesn't exist in favorites" });
-  }
-
-  // Add the product ID to the favorites array
-  user.favorites.pull(prodId);
-
-  // Save the updated user
-  await user.save();
-  return res.status(200).json({ message: 'Product deleted from favorites' });
-
-  }catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-};
+}
 
 module.exports.deleteAllFavorites = async (req, res, next) => {
   try{
-    const {userId}  = req.body;
+    /*const {userId}  = req.userId;
   if (!userId) {
     res.status(400).json("Can't find user id");
-  }
+  }*/
 
-  const user = await userModel.findById(userId);
+  const user = await userModel.findById(req.userId);
   if (!user) {
     return res.status(404).json({ message: 'User not found' });
   }
@@ -329,10 +297,17 @@ module.exports.deleteAllFavorites = async (req, res, next) => {
   // Save the updated user
   await user.save();
 
-  return res.status(200).json({ message: 'Favorites deleted' });
+  return res.status(200).json({ 
+    status: true,
+    message: 'Favorites deleted',
+    user: user
+  });
   }catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ 
+      status: false,
+      message: error.message
+     });
   }
 };
 
@@ -347,7 +322,24 @@ module.exports.getUserById = async (req, res, next) => { //
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-}; 
+};
+
+module.exports.getFavorites = async (req, res) => {
+  try{
+
+    const user = await userModel.findById(req.userId);
+    const favoritesList = user.favorites;
+    res.status(200).json({
+      status: true,
+      favorites: favoritesList
+    })
+  }catch(error){
+    res.status(500).json({
+      status: false,
+      message: error.message
+    });
+  }
+}
 
 //email Verification Template 
 function emailVerificationTemplate(verifcode, name) {
