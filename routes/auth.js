@@ -11,6 +11,6 @@ router.post('/otp', auth.otpVerification);
 router.post('/resendOtp', auth.resendOtpVerification);
 router.post('/login', auth.login);
 router.put('/addToFavorites', verifyToken, auth.addToFavorites);
-router.delete('/deleteAllFavorites', verifyToken, auth.deleteAllFavorites);
+router.put('/deleteAllFavorites', verifyToken, auth.deleteAllFavorites);
 
 module.exports = router

@@ -2,6 +2,7 @@ const productModel = require('../models/productModel');
 const Brand = require('../models/brandModel');
 const Shop = require('../models/shopModel');
 const Category = require('../models/categoryModel');
+const userModel = require('../models/userModel');
 const cloudinary = require('cloudinary').v2;
 const { validationResult } = require('express-validator');
 const dotenv = require('dotenv')
@@ -19,26 +20,43 @@ module.exports.getAllProducts = async (req, res, next) => {
       if (!productList) {
         throw new Error("Product not found");
       }
-      res.status(200).json(productList);
+      const userFavorites= await userModel.findById(req.userId).select('favorites');
+      const productListWithFavorites = productList.map(product => {
+        const isFavorite = userFavorites.favorites.includes(product._id);
+        return { ...product._doc, isFavorite }; // Adding a property 'isFavorite' to each product
+      });
+      res.status(200).json(productListWithFavorites);
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
   };
 
-module.exports.getProductById = async (req, res, next) => { // 
+  module.exports.getProductById = async (req, res, next) => {
     try {
-        const { id } = req.params;
+      const { id } = req.params;
       const product = await productModel.findById(id);
+  
       if (!product) {
-        throw new Error("Product not found");
+        return res.status(404).json({ message: "Product not found" });
       }
+  
+      // Increment the 'searched' count for the product
       product.searched += 1;
       await product.save();
-      res.status(200).json(product);
+  
+      // Retrieve user's favorites and check if the current product is in favorites
+      const user = await userModel.findById(req.userId).select('favorites');
+      const isFavorite = user.favorites.includes(product._id);
+  
+      // Return product data along with 'isFavorite' flag
+      const prodData = { ...product._doc, isFavorite };
+      return res.status(200).json(prodData);
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      console.error(err);
+      return res.status(500).json({ message: "Internal server error" });
     }
-}; 
+  };
+  
 
 module.exports.getProductByName = async (req, res, next) => { //fil postman requete tkoun http://localhost:5000/products/getProductByName?name=necklace
     try {
@@ -66,19 +84,20 @@ module.exports.getProductByName = async (req, res, next) => { //fil postman requ
 module.exports.getProductByBarCode = async (req, res, next) => { // 
     try {
         const { barcode } = req.query;
-      const product = await productModel.find({barcode})
-      if (!product || product.length === 0) {
+      const product = await productModel.findOne({barcode})
+      if (!product ) {
         throw new Error("Product not found");
       }
+      product.searched +=1;
+      await product.save();
+      
+      const user = await userModel.findById(req.userId).select('favorites');
+      const isFavorite = user.favorites.includes(product._id);
   
-      // Increment the 'searched' field by 1 for each product found
-      for (let i = 0; i < product.length; i++) {
-        product[i].searched += 1;
-        await product[i].save();
-      }
-      /*product.searched += 1;
-      await product.save();*/
-      res.status(200).json(product);
+      // Return product data along with 'isFavorite' flag
+      const prodData = { ...product._doc, isFavorite };
+      
+      return res.status(200).json(prodData);
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
@@ -317,7 +336,12 @@ module.exports.searchProductsWithFilter = async (req, res, next) =>{
             .sort(sortCriteria)
             //.populate('shops') //tnajamch t7otha khater .populate tekhou fil paramtere ken type id
             console.log(productList.length);
-        res.status(200).json(productList);
+            const userFavorites= await userModel.findById(req.userId).select('favorites');
+      const productListWithFavorites = productList.map(product => {
+        const isFavorite = userFavorites.favorites.includes(product._id);
+        return { ...product._doc, isFavorite }; // Adding a property 'isFavorite' to each product
+      });
+        res.status(200).json(productListWithFavorites);
     }catch(error){
         res.status(500).json({ message: error.message });
     }

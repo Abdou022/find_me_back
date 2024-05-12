@@ -1,5 +1,6 @@
 const categoryModel = require('../models/categoryModel');
 const Product = require('../models/productModel');
+const userModel = require('../models/userModel');
 
 module.exports.getAllCategories = async (req, res, next) => {
     try {
@@ -51,8 +52,12 @@ module.exports.getCategoryProducts = async (req, res, next) => {
         brand: product.brand,
       };
     });
-
-    res.status(200).json({prods: products});
+    const userFavorites= await userModel.findById(req.userId).select('favorites');
+      const productListWithFavorites = products.map(product => {
+        const isFavorite = userFavorites.favorites.includes(product.id);
+        return { ...product, isFavorite }; // Adding a property 'isFavorite' to each product
+      });
+    res.status(200).json({prods: productListWithFavorites});
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

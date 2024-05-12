@@ -1,4 +1,5 @@
 const userModel = require('../models/userModel');
+const productModel = require('../models/productModel');
 const userOTPVerificaticationModel = require('../models/userOTPVerification');
 const cloudinary = require('cloudinary').v2;
 const crypto = require('crypto');
@@ -329,9 +330,21 @@ module.exports.getFavorites = async (req, res) => {
 
     const user = await userModel.findById(req.userId);
     const favoritesList = user.favorites;
+    const detailedFavorites = [];
+
+    // Retrieve details for each product ID in the favorites list
+    for (const productId of favoritesList) {
+      const product = await productModel.findById(productId);
+      detailedFavorites.push(product);
+    }
+    const userFavorites= await userModel.findById(req.userId).select('favorites');
+      const productListWithFavorites = detailedFavorites.map(product => {
+        const isFavorite = userFavorites.favorites.includes(product._id);
+        return { ...product._doc, isFavorite }; // Adding a property 'isFavorite' to each product
+      });
     res.status(200).json({
       status: true,
-      favorites: favoritesList
+      favorites: productListWithFavorites
     })
   }catch(error){
     res.status(500).json({

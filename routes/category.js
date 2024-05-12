@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const category = require('../controllers/categoryController');
+const {verifyToken}= require('../middlewares/verifyToken');
 
 // Get All Categories
 router.get('/getAllCategories', category.getAllCategories);
@@ -9,7 +10,7 @@ router.get('/getAllCategories', category.getAllCategories);
 router.get('/getCategory/:id', category.getCategoryById);
 
 // Get Category Products By id
-router.get('/getCategoryProducts/:id', category.getCategoryProducts);
+router.get('/getCategoryProducts/:id', verifyToken, category.getCategoryProducts);
 
 // Get Category By name
 router.get('/getCategoryByName', category.getCategoryByName);

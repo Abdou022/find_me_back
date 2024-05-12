@@ -2,18 +2,19 @@ var express = require('express');
 var router = express.Router();
 const prod = require('../controllers/productController');
 const upload = require('../middlewares/uploadFile');
+const {verifyToken}= require('../middlewares/verifyToken');
 
 // Get All products
-router.get('/getAllProducts', prod.getAllProducts);
+router.get('/getAllProducts', verifyToken, prod.getAllProducts);
 
 // Get Product By id
-router.get('/getProduct/:id', prod.getProductById);
+router.get('/getProduct/:id', verifyToken, prod.getProductById);
 
 // Get Product By name
 router.get('/getProductByName', prod.getProductByName);
 
 // Get Product By barcode
-router.get('/getProductByBarCode', prod.getProductByBarCode);
+router.get('/getProductByBarCode', verifyToken, prod.getProductByBarCode);
 
 // Get Products By color
 router.get('/getProductsByColor', prod.getProductsByColor);
@@ -31,7 +32,7 @@ router.get('/sortByRating',prod.sortByRating);
 router.get('/sortByRatingDec',prod.sortByRatingDec);
 
 //Search With Filter
-router.post('/searchProductsWithFilter',prod.searchProductsWithFilter);
+router.post('/searchProductsWithFilter', verifyToken, prod.searchProductsWithFilter);
  
 // Create new product
 router.post('/addProduct', upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 5 }]),prod.addProduct);

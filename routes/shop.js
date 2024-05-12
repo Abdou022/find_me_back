@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const shop = require('../controllers/shopController');
-
+const {verifyToken}= require('../middlewares/verifyToken');
 
 // Get All Shops
 router.get('/getAllShops',shop.getAllShops);
@@ -13,7 +13,7 @@ router.get('/getShop/:id', shop.getShopById);
 router.get('/getShopByName', shop.getShopByName);
 
 // Get Shop Products By id
-router.get('/getShopProducts/:id', shop.getShopProducts);
+router.get('/getShopProducts/:id', verifyToken, shop.getShopProducts);
 
 // Get All Shops With Specified City
 router.get('/getShopsByCity', shop.getShopsByCity);
