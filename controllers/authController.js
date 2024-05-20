@@ -579,7 +579,7 @@ function emailVerificationTemplate(verifcode, name) {
         <p style="font-size: 14px; line-height: 140%;"> </p>
         <p style="font-size: 14px; line-height: 140%;"><span style="font-size: 18px; line-height: 25.2px; color: #000000;">${verifcode}<br /><br /><br /></span></p>
         <p style="font-size: 14px; line-height: 140%;"> </p>
-        <p style="font-size: 14px; line-height: 140%;"><span style="font-size: 18px; line-height: 25.2px; color: #000000;">This code will expire in 1 minute. If you did not sign up for our service, please disregard this email.<br /><br /><br /></span></p>
+        <p style="font-size: 14px; line-height: 140%;"><span style="font-size: 18px; line-height: 25.2px; color: #000000;">This code will expire in 5 minutes. If you did not sign up for our service, please disregard this email.<br /><br /><br /></span></p>
         <p style="font-size: 14px; line-height: 140%;"> </p>
         <p style="font-size: 14px; line-height: 140%;"><span style="font-size: 18px; line-height: 25.2px; color: #000000;">Verifying your email will allow you to access all features of our service. We're excited to have you as a member of our community!<br /><br /><br /></span></p>
        
