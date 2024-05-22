@@ -352,7 +352,60 @@ module.exports.getFavorites = async (req, res) => {
       message: error.message
     });
   }
-}
+};
+
+module.exports.getAllUsers = async (req,res) => {
+  try {
+    const userList = await userModel.find();// .populate('owner') tjiblek fi west postman cellule mta3 owner kemla moch ken id mte3ou
+    if (!userList) {
+      throw new Error("Users not found");
+    }
+    res.status(200).json(userList);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports.desactivateAccount = async (req, res) => { // 
+  try {
+    const { id } = req.params;
+    const user = await userModel.findById(id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    accountStatus = user.activated;
+    updatedUser = await userModel.findByIdAndUpdate(
+      id,
+      {
+        $set : { activated: !accountStatus },
+      },
+      { new: true}
+    );
+    let message;
+    if (accountStatus){
+      message = "Account Desactivated!"
+    }else{
+      message = "Account Activated!"
+    }
+    res.status(200).json({message: message, user: updatedUser});
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const checkIfUserExists = await userModel.findById(id);
+    if (!checkIfUserExists) {
+      throw new Error("User not found");
+    }
+    await userModel.findByIdAndDelete(id);
+    res.status(200).json("User Deleted Successfully!");
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
 //email Verification Template 
 function emailVerificationTemplate(verifcode, name) {

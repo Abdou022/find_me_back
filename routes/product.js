@@ -31,6 +31,9 @@ router.get('/sortByRating',prod.sortByRating);
 // Tri decroissant rating
 router.get('/sortByRatingDec',prod.sortByRatingDec);
 
+// Most Searched Products
+router.get('/mostSearcheProducts', prod.mostSearchedProducts);
+
 //Search With Filter
 router.post('/searchProductsWithFilter', verifyToken, prod.searchProductsWithFilter);
  

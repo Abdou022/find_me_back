@@ -1,4 +1,5 @@
 const discountModel = require('../models/discountModel');
+const productModel = require('../models/productModel');
 
 module.exports.getAllDiscounts = async (req, res, next) => {
     try {
@@ -38,52 +39,77 @@ module.exports.getDiscountByValue = async (req, res, next) => { //
     }
 }; 
 
-/*module.exports.addDiscount = async (req, res, next) => {
-    try{
-        const {value, sale_products} = req.body; //tnajem ta3mel const nom = req.body.nom;
-        const discount = new discountModel({value});
-        const addedDiscount= await discount.save();
-        res.status(201).json(addedDiscount);
-      }catch(error){
-        res.status(500).json({message: error.message});
-      }
-};*/
 module.exports.addDiscount = async (req, res, next) => {
-    try {
-        const { value, sale_products } = req.body;
+  try {
+      const { value, sale_products } = req.body;
 
-        // Check if a discount with the provided value already exists
-        const existingDiscount = await discountModel.findOne({ value });
-         
+      // Check if a discount with the provided value already exists
+      const existingDiscount = await discountModel.findOne({ value });
+      
+      await discountModel.updateMany(
+        { sale_products: { $in: sale_products } },
+        { $pull: { sale_products: { $in: sale_products } } }
+    );
 
-        if (existingDiscount) {
-            // If the discount exists, update it by adding the product IDs
-            existingDiscount.sale_products.push(sale_products);
-            await existingDiscount.save();
-            res.status(200).json(existingDiscount);
-        } else {
-            // If the discount doesn't exist, create a new one
-            const newDiscount = new discountModel({ value, sale_products });
-            const addedDiscount = await newDiscount.save();
-            res.status(201).json(addedDiscount);
-        }
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+      if (existingDiscount) {
+          // If the discount exists, add the product IDs to the existing sale_products
+          sale_products.forEach(productId => {
+          existingDiscount.sale_products.push(productId);
+        });
+        await existingDiscount.save();
+      } else {
+          // If the discount doesn't exist, create a new one
+          const newDiscount = new discountModel({ value, sale_products });
+          const addedDiscount = await newDiscount.save();
+      }
+
+      //update discountPrice in productModel
+      console.log("value: ",value);
+      const prods= await productModel.find({ _id: { $in: sale_products } });
+      
+      for (const product of prods) {
+        const discountedPrice = product.price - (product.price * value / 100);
+        product.discountPrice = discountedPrice;
+        await product.save();
     }
+      const newDiscount = await discountModel.findOne({ value });
+      res.status(200).json({message: "Products are now discounted!",discount: newDiscount});
+  } catch (error) {
+      res.status(500).json({ message: error.message });
+  }
 };
 
 module.exports.deleteDiscount = async (req, res, next) => {
-    try {
-      const { value } = req.params; //req.params acces fil postman http://localhost:5000/users/deleteUser/2234567887654
-      const checkIfDiscountExists = await discountModel.findById(id);
-      if (!checkIfDiscountExists) {
-        throw new Error("Brand not found");
-      }
-      await Product.deleteMany({ brand: checkIfBrandExists.name }) //tfasakh tous les produits du brand supprime
-      await brandModel.findByIdAndDelete(id);
-  
-      res.status(200).json("Deleted Brand!");
-    } catch (err) {
-      res.status(500).json({ message: err.message });
+  try {
+    const {prods} = req.body;
+
+    if (!prods) {
+      throw new Error("Products not found");
     }
+
+    await discountModel.updateMany(
+      { sale_products: { $in: prods } },
+      { $pull: { sale_products: { $in: prods } } }
+  );
+  const products= await productModel.find({ _id: { $in: prods } });
+  for (const product of products) {
+    product.discountPrice = -1;
+    await product.save();
+}
+    res.status(200).json({message:"Products are removed from Discount"});
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports.getDiscountedProducts = async (req, res) => {
+try {
+  const discountedProducts = await productModel.find({ discountPrice: { $ne: -1 } });
+  if (!discountedProducts.length) {
+    return res.status(404).json({ message: "No discounted products found" });
+  }
+  res.status(200).json({message: "Discounted Products", products: discountedProducts});
+} catch (err) {
+  res.status(500).json({ message: err.message });
+}
 };

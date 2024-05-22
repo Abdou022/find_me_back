@@ -345,5 +345,28 @@ module.exports.searchProductsWithFilter = async (req, res, next) =>{
     }catch(error){
         res.status(500).json({ message: error.message });
     }
-}
+};
 
+module.exports.mostSearchedProducts = async (req, res) => {
+    try {
+        // Fetch all products and sort by 'searched' attribute in descending order
+        const products = await productModel.find().sort({ searched: -1 }).exec();
+
+        // Calculate the total number of searches
+        const totalSearches = products.reduce((sum, product) => sum + product.searched, 0);
+        console.log(totalSearches);
+        // Format the response to include the 'searched' value and its percentage
+        const formattedProducts = products.map(product => {
+            const percentage = totalSearches > 0 ? (product.searched / totalSearches) * 100 : 0;
+            return {
+                product: product,
+                searched: product.searched,
+                percentage: percentage.toFixed(2) // Format percentage to 2 decimal places
+            };
+        });
+
+        res.status(200).json(formattedProducts);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

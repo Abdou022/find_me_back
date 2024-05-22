@@ -70,6 +70,7 @@ manager.addDocument("en", "alright thanks", "thanking");
 
 // user back
 manager.addDocument("en", "I'm back", "user.back");
+manager.addDocument("en", "Im back", "user.back");
 manager.addDocument("en", "I have returned", "user.back");
 manager.addDocument("en", "here I am again", "user.back");
 manager.addDocument("en", "I came back", "user.back");
