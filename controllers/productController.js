@@ -305,7 +305,6 @@ module.exports.sortByRatingDec = async (req, res, next) => {
 module.exports.searchProductsWithFilter = async (req, res, next) =>{
     try{
         let query = {};
-        const test1="";
         //Filter
         if(req.body.region){
             const shopList = await Shop.find({ region: req.body.region }); // Retrieve shops in the specified region

@@ -1,5 +1,6 @@
 const discountModel = require('../models/discountModel');
 const productModel = require('../models/productModel');
+const userModel = require('../models/userModel');
 
 module.exports.getAllDiscounts = async (req, res, next) => {
     try {
@@ -103,13 +104,38 @@ module.exports.deleteDiscount = async (req, res, next) => {
 };
 
 module.exports.getDiscountedProducts = async (req, res) => {
-try {
-  const discountedProducts = await productModel.find({ discountPrice: { $ne: -1 } });
-  if (!discountedProducts.length) {
-    return res.status(404).json({ message: "No discounted products found" });
+  try {
+    const discountedProducts = await productModel.find({ discountPrice: { $ne: -1 } });
+    if (!discountedProducts.length) {
+      return res.status(404).json({ message: "No discounted products found" });
+    }
+
+    const userFavorites = await userModel.findById(req.userId).select('favorites');
+    const discountedProductsWithFavorites = discountedProducts.map(product => {
+      const isFavorite = userFavorites.favorites.includes(product._id.toString());
+      return {
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        rating: product.rating,
+        barcode: product.barcode,
+        thumbnail: product.thumbnail,
+        images: product.images,
+        colors: product.colors,
+        description: product.description,
+        size: product.size,
+        brand: product.brand,
+        category: product.category,
+        discountPrice: product.discountPrice,
+        searched: product.searched,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
+        isFavorite: isFavorite
+      };
+    });
+
+    res.status(200).json({ message: "Discounted Products", products: discountedProductsWithFavorites });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-  res.status(200).json({message: "Discounted Products", products: discountedProducts});
-} catch (err) {
-  res.status(500).json({ message: err.message });
-}
 };

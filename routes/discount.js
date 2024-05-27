@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const discount = require('../controllers/discountController');
+const {verifyToken}= require('../middlewares/verifyToken');
 
 // Get All Discounts
 router.get('/getAllDiscounts',discount.getAllDiscounts);
@@ -12,7 +13,7 @@ router.get('/getDiscount/:id',discount.getDiscountById);
 router.get('/getDiscountByValue/:value',discount.getDiscountByValue);
 
 // Get Discounted Products
-router.get('/getDiscountedProducts', discount.getDiscountedProducts);
+router.get('/getDiscountedProducts', verifyToken, discount.getDiscountedProducts);
 
 // Add Discount
 router.post('/addDiscount',discount.addDiscount);
