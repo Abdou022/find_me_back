@@ -50,6 +50,7 @@ module.exports.getCategoryProducts = async (req, res, next) => {
         description: product.description,
         size: product.size,
         brand: product.brand,
+        discountPrice: product.discountPrice
       };
     });
     const userFavorites= await userModel.findById(req.userId).select('favorites');
