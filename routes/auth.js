@@ -11,6 +11,8 @@ router.post('/signup', upload.single('file'), auth.create_account);
 router.post('/otp', auth.otpVerification);
 router.post('/resendOtp', auth.resendOtpVerification);
 router.post('/login', auth.login);
+router.post('/forgetPassword', auth.forgetPassword);
+router.post("/resetPassword", auth.resetPassword);
 router.put('/addToFavorites', verifyToken, auth.addToFavorites);
 router.put('/deleteAllFavorites', verifyToken, auth.deleteAllFavorites);
 router.put('/desactivateAccount/:id', auth.desactivateAccount);
