@@ -883,7 +883,9 @@ module.exports.forgetPassword = async (req, res) => {
         return res.status(200).json({
           status: true,
           message:"An email is sent to your mailbox.",
-          userId: user._id
+          userId: user._id,
+          name: user.username,
+          email: user.email
         });
       } catch (error) {
         console.log(error);
@@ -1344,7 +1346,7 @@ module.exports.resetPassword = async (req, res) => {
         return res.status(200).json({ status: true, message: 'Password changed successfully' });
 
       } else {
-        return res.status(404).json({ error: "User doesn't exist with this email" });
+        return res.status(404).json({ status: false, message: error.message });
       }
     
   } catch (error) {
