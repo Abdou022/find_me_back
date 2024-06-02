@@ -121,25 +121,9 @@ module.exports.getProductsByColor = async (req, res, next) => {
 
 module.exports.addProduct = async (req, res, next) => {
     try{
-        //
-        //const thumbnail = req.files['thumbnail'][0].filename; //fil postman nemchiw lel body w n7otou form data moch raw w ndakhlou esemi image_user, email, password...
-        //const images = req.files['images'].map(file => file.filename);
+        
         const {name, price, rating, barcode, colors, description, size, brand_id, /*shops_id*/} = req.body; //tnajem ta3mel const nom = req.body.nom;
-        //if (!name) {
-        //    return res.status(200).json({message: "Name required"});//7attina 200 khater kif bech njiw bech na3mlou liaison bel front 7achetna bech yraje3 true
-        /*}
-        if (!price) {
-            return res.status(200).json({message: "Price required"});
-        }
-        if (!barcode) {
-            return res.status(200).json({message: "Barcode required"});
-        }
-        if (!thumbnail) {
-            return res.status(200).json({message: "Image required"});
-        }
-        if (!brand_id) {
-            return res.status(200).json({message: "Enter valid Brand id"});
-        }*/ ///////////////////////////////////////////////////////////////////////////
+        
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -163,35 +147,18 @@ module.exports.addProduct = async (req, res, next) => {
             }
 
         }
-        /*if (!shops_id) {
-            return res.status(200).json({message: "Enter valid Shops id"});
-        }*/
         const brand_name = await Brand.findById(brand_id);
-        // Upload thumbnail to Cloudinary
-        /*console.log("hi");
-        const thumbnailResult = await cloudinary.uploader.upload(thumbnail,function(err,result){
-            if(err){
-                console.log(err.message);  
-                return res.status(404).json("erreeeeeeeur");
-            }
-        });
-        const thumbnailUrl = thumbnailResult.secure_url;
-        console.log("thumbnailUrl");
- 
-        // Upload images to Cloudinary and extract their URLs
-        const imageUrls = await Promise.all(images.map(async (image) => {
-            const result = await cloudinary.uploader.upload(image);
-            return result.secure_url;
-        }));*/
+        const parsedColors = JSON.parse(colors);
+        const parsedSize = JSON.parse(size);
 
         const product = new productModel({
           name,
           price,
           rating,
           barcode,
-          colors,
+          colors: parsedColors,
           description,
-          size,
+          size: parsedSize,
           thumbnail: thumbnail ? thumbnail.secure_url : null,
           images: images.length > 0 ? images : null,
           brand:brand_name.name
@@ -232,10 +199,12 @@ module.exports.updateProduct = async (req, res, next) => { //ne9sa modifications
       if (!checkIfProductExists) {
         throw new Error("Product not found");
       }
+      const parsedColors = JSON.parse(colors);
+      const parsedSize = JSON.parse(size);
       updatedProduct = await productModel.findByIdAndUpdate(
         id,
         {
-            $set : {name, price ,rating, barcode, colors, description, size/*, thumbnail, images*/},
+            $set : {name, price ,rating, barcode, colors: parsedColors, description, size: parsedSize/*, thumbnail, images*/},
         },
         { new: true}
         );
