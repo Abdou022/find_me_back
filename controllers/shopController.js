@@ -202,15 +202,16 @@ module.exports.addProductsToShop = async (req, res, next) => {
     if (!checkIfShopExists) {
       throw new Error("Shop not found");
     }
+    const parsedProducts = Array.isArray(products) ? products : JSON.parse(products);
     updatedShop = await shopModel.findByIdAndUpdate(
       id,
       {
-          $push : {products},
+         $push: { products: { $each: parsedProducts } } ,
       },
       { new: true}
       );
       //await Product.updateMany({brand: checkIfBrandExists.name}, { $set: { brand: name } });
-      await Promise.all(products.map(async productId => {
+      await Promise.all(parsedProducts.map(async productId => {
         const product = await Product.findById(productId);
         if (product) {
             product.shops.push(updatedShop.name);
@@ -229,7 +230,7 @@ module.exports.deleteProductsFromShop = async (req, res, next) => {
       const {products} = req.body;
       const checkIfShopExists = await shopModel.findById(id);
     if (!checkIfShopExists) {
-      throw new Error("Shop not found");
+      res.status(404).json({ message: "Shop not found" });
     }
     updatedShop = await shopModel.findByIdAndUpdate(
       id,

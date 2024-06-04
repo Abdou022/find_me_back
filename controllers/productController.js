@@ -3,6 +3,7 @@ const Brand = require('../models/brandModel');
 const Shop = require('../models/shopModel');
 const Category = require('../models/categoryModel');
 const userModel = require('../models/userModel');
+const discountModel = require('../models/discountModel');
 const cloudinary = require('cloudinary').v2;
 const { validationResult } = require('express-validator');
 const dotenv = require('dotenv')
@@ -337,4 +338,22 @@ module.exports.mostSearchedProducts = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
+};
+
+module.exports.getTotalInformations = async (req,res) =>{
+    try {
+        const totalProducts = await productModel.countDocuments();
+        const totalShops = await Shop.countDocuments();
+        const totalBrands = await Brand.countDocuments();
+        const totalUsers= await userModel.countDocuments();
+        const totalCategories= await Category.countDocuments();
+        const discountProducts = await discountModel.aggregate([
+            { $unwind: '$sale_products' },
+            { $group: { _id: null, total: { $sum: 1 } } },
+          ]);
+          const totalDiscounts = discountProducts.length > 0 ? discountProducts[0].total : 0;
+        res.status(200).json({ status: true, products: totalProducts, shops: totalShops, brands: totalBrands, users: totalUsers, categories: totalCategories, discounts: totalDiscounts });
+      } catch (error) {
+        res.status(500).json({ message: 'Error fetching total Informations', status: false });
+      }
 };

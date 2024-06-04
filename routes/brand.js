@@ -8,6 +8,9 @@ router.get('/getAllBrands', brand.getAllBrands);
 // Get Brand By id
 router.get('/getBrand/:id', brand.getBrandById);
 
+// Get Brand By id
+router.get('/getBrandProducts/:id', brand.getBrandProducts);
+
 // Get Brand By name
 router.get('/getBrandByName', brand.getBrandByName);
 

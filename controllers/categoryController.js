@@ -112,7 +112,7 @@ module.exports.deleteCategory = async (req, res, next) => {
       const { id } = req.params; //req.params acces fil postman http://localhost:5000/users/deleteUser/2234567887654
       const checkIfCategoryExists = await categoryModel.findById(id);
       if (!checkIfCategoryExists) {
-        throw new Error("Category not found");
+        res.status(404).json({ message: "Category not found!" });
       }
       await Product.updateMany({ category: checkIfCategoryExists.name }, { $pull: { category: checkIfCategoryExists.name } }); //tfasakh tous les produits du brand supprime
       await categoryModel.findByIdAndDelete(id);
@@ -129,7 +129,7 @@ module.exports.updateCategoryName = async (req, res, next) => {
         const {name} = req.body;
         const checkIfCategoryExists = await categoryModel.findById(id);
       if (!checkIfCategoryExists) {
-        throw new Error("Category not found");
+        res.status(404).json({ message: "Category not found" });
       }
       updatedCategory = await categoryModel.findByIdAndUpdate(
         id,
@@ -181,7 +181,7 @@ module.exports.addProductsToCategory = async (req, res, next) => {
         const {products} = req.body;
         const checkIfCategoryExists = await categoryModel.findById(id);
       if (!checkIfCategoryExists) {
-        throw new Error("Category not found");
+        res.status(404).json({ message: "Category not found" });
       }
       updatedCategory = await categoryModel.findByIdAndUpdate(
         id,

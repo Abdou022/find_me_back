@@ -17,6 +17,8 @@ var discountRouter = require('./routes/discount');
 var categoryRouter = require('./routes/category');
 var authRouter = require('./routes/auth');
 var chatbotRouter = require('./routes/chatbot');
+var notificationRouter =require("./routes/notification")
+
 
 var app = express();
 
@@ -40,6 +42,7 @@ app.use('/discounts', discountRouter);
 app.use('/categories', categoryRouter);
 app.use('/auth', authRouter);
 app.use('/chatbot', chatbotRouter);
+app.use("/notifications",notificationRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

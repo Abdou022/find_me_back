@@ -36,6 +36,9 @@ router.get('/mostSearcheProducts', prod.mostSearchedProducts);
 
 //Search With Filter
 router.post('/searchProductsWithFilter', verifyToken, prod.searchProductsWithFilter);
+
+// get total informations
+router.get('/getTotalInformations', prod.getTotalInformations);
  
 // Create new product
 router.post('/addProduct', upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 5 }]),prod.addProduct);
@@ -44,7 +47,8 @@ router.post('/addProduct', upload.fields([{ name: 'thumbnail', maxCount: 1 }, { 
 router.delete('/deleteProduct/:id', prod.deleteProduct);
 
 // Update Product
-router.put('/updateProduct/:id', prod.updateProduct); 
+router.put('/updateProduct/:id', prod.updateProduct);
+
 
 
 module.exports = router;

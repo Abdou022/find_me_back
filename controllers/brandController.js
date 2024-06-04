@@ -16,7 +16,7 @@ module.exports.getAllBrands = async (req, res, next) => {
   module.exports.getBrandById = async (req, res, next) => { // 
     try {
         const { id } = req.params;
-      const brand = await brandModel.findById(id);
+      const brand = await brandModel.findById(id).populate("products");
       if (!brand) {
         throw new Error("Brand not found");
       }
@@ -24,7 +24,40 @@ module.exports.getAllBrands = async (req, res, next) => {
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
-}; 
+};
+
+module.exports.getBrandProducts = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const brand = await brandModel.findById(id).populate('products');
+    if (!brand) {
+      return res.status(404).json({ message: "Brand not found" });
+    }
+
+    // Extract the product details
+    const products = brand.products.map((product) => {
+      return {
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        rating: product.rating,
+        barcode: product.barcode,
+        thumbnail: product.thumbnail,
+        images: product.images,
+        colors: product.colors,
+        description: product.description,
+        size: product.size,
+        brand: product.brand,
+        category: product.category,
+        discountPrice: product.discountPrice
+      };
+    });
+
+    res.status(200).json({ prods: products });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
 module.exports.getBrandByName = async (req, res, next) => { //fil postman requete tkoun http://localhost:5000/products/getProductByName?name=necklace
     try {
@@ -84,7 +117,7 @@ module.exports.updateBrand = async (req, res, next) => {
         const {name} = req.body;
         const checkIfBrandExists = await brandModel.findById(id);
       if (!checkIfBrandExists) {
-        throw new Error("Brand not found");
+        res.status(404).json({ message: "Brand not found" });
       }
       updatedBrand = await brandModel.findByIdAndUpdate(
         id,

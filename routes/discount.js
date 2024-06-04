@@ -15,10 +15,16 @@ router.get('/getDiscountByValue/:value',discount.getDiscountByValue);
 // Get Discounted Products
 router.get('/getDiscountedProducts', verifyToken, discount.getDiscountedProducts);
 
+// Get Specific Discount Products
+router.get('/getSpecificDiscountProducts/:id', verifyToken, discount.getSpecificDiscountProducts);
+
 // Add Discount
 router.post('/addDiscount',discount.addDiscount);
 
-//Delete Products form Discount
+// Empty Discount
+router.put('/emptyDiscount/:id', discount.emptyDiscount);
+
+//Delete Products from Discount
 router.delete('/deleteDiscount', discount.deleteDiscount);
 
 module.exports = router;
