@@ -49,6 +49,6 @@ router.delete('/deleteProduct/:id', prod.deleteProduct);
 // Update Product
 router.put('/updateProduct/:id', prod.updateProduct);
 
-
+router.get("/getcategoryPourcentage",prod.getcategoryPourcentage)
 
 module.exports = router;

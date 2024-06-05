@@ -1,6 +1,7 @@
 const userModel = require('../models/userModel');
 const productModel = require('../models/productModel');
 const userOTPVerificaticationModel = require('../models/userOTPVerification');
+const discountModel = require('../models/discountModel'); // Adjust the path to your discount model
 const cloudinary = require('cloudinary').v2;
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
@@ -1352,4 +1353,154 @@ module.exports.resetPassword = async (req, res) => {
   } catch (error) {
     return res.status(400).json({ message: error.message, status: false });
   }
-}
+};
+
+
+
+module.exports.UserStats = async (req, res) => {
+  try {
+    // Get the user creation statistics
+    const userCreationStats = await userModel.aggregate([
+      {
+        $group: {
+          _id: {
+            dayOfWeek: { $dayOfWeek: "$createdAt" }
+          },
+          totalUsers: { $count: {} }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          day: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$_id.dayOfWeek", 1] }, then: "Monday" },
+                { case: { $eq: ["$_id.dayOfWeek", 2] }, then: "Tuesday" },
+                { case: { $eq: ["$_id.dayOfWeek", 3] }, then: "Wednesday" },
+                { case: { $eq: ["$_id.dayOfWeek", 4] }, then: "Thursday" },
+                { case: { $eq: ["$_id.dayOfWeek", 5] }, then: "Friday" },
+                { case: { $eq: ["$_id.dayOfWeek", 6] }, then: "Saturday" },
+                { case: { $eq: ["$_id.dayOfWeek", 7] }, then: "Sunday" }
+              ]
+            }
+          },
+          totalUsers: 1
+        }
+      }
+    ]);
+
+    // Get the product creation statistics
+    const productCreationStats = await productModel.aggregate([
+      {
+        $group: {
+          _id: {
+            dayOfWeek: { $dayOfWeek: "$createdAt" }
+          },
+          totalProducts: { $count: {} }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          day: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$_id.dayOfWeek", 1] }, then: "Monday" },
+                { case: { $eq: ["$_id.dayOfWeek", 2] }, then: "Tuesday" },
+                { case: { $eq: ["$_id.dayOfWeek", 3] }, then: "Wednesday" },
+                { case: { $eq: ["$_id.dayOfWeek", 4] }, then: "Thursday" },
+                { case: { $eq: ["$_id.dayOfWeek", 5] }, then: "Friday" },
+                { case: { $eq: ["$_id.dayOfWeek", 6] }, then: "Saturday" },
+                { case: { $eq: ["$_id.dayOfWeek", 7] }, then: "Sunday" }
+              ]
+            }
+          },
+          totalProducts: 1
+        }
+      }
+    ]);
+
+    // Get the discount creation statistics
+    const discountCreationStats = await discountModel.aggregate([
+      {
+        $group: {
+          _id: {
+            dayOfWeek: { $dayOfWeek: "$createdAt" }
+          },
+          totalDiscounts: { $count: {} }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          day: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$_id.dayOfWeek", 1] }, then: "Monday" },
+                { case: { $eq: ["$_id.dayOfWeek", 2] }, then: "Tuesday" },
+                { case: { $eq: ["$_id.dayOfWeek", 3] }, then: "Wednesday" },
+                { case: { $eq: ["$_id.dayOfWeek", 4] }, then: "Thursday" },
+                { case: { $eq: ["$_id.dayOfWeek", 5] }, then: "Friday" },
+                { case: { $eq: ["$_id.dayOfWeek", 6] }, then: "Saturday" },
+                { case: { $eq: ["$_id.dayOfWeek", 7] }, then: "Sunday" }
+              ]
+            }
+          },
+          totalDiscounts: 1
+        }
+      }
+    ]);
+
+    // Create a full week's response
+    const response = {
+      users: {
+        Monday: 0,
+        Tuesday: 0,
+        Wednesday: 0,
+        Thursday: 0,
+        Friday: 0,
+        Saturday: 0,
+        Sunday: 0
+      },
+      products: {
+        Monday: 0,
+        Tuesday: 0,
+        Wednesday: 0,
+        Thursday: 0,
+        Friday: 0,
+        Saturday: 0,
+        Sunday: 0
+      },
+      discounts: {
+        Monday: 0,
+        Tuesday: 0,
+        Wednesday: 0,
+        Thursday: 0,
+        Friday: 0,
+        Saturday: 0,
+        Sunday: 0
+      }
+    };
+
+    // Populate the response with the user aggregation results
+    userCreationStats.forEach((stat) => {
+      response.users[stat.day] = stat.totalUsers;
+    });
+
+    // Populate the response with the product aggregation results
+    productCreationStats.forEach((stat) => {
+      response.products[stat.day] = stat.totalProducts;
+    });
+
+    // Populate the response with the discount aggregation results
+    discountCreationStats.forEach((stat) => {
+      response.discounts[stat.day] = stat.totalDiscounts;
+    });
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching statistics" });
+  }
+};

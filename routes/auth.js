@@ -7,6 +7,7 @@ const {verifyToken}= require('../middlewares/verifyToken');
 router.get('/getUser/:id', auth.getUserById);
 router.get('/getFavorites', verifyToken, auth.getFavorites);
 router.get('/getAllUsers', auth.getAllUsers);
+router.get('/UserStats', auth.UserStats);
 router.post('/signup', upload.single('file'), auth.create_account);
 router.post('/otp', auth.otpVerification);
 router.post('/resendOtp', auth.resendOtpVerification);

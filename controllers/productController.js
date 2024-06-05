@@ -334,7 +334,7 @@ module.exports.mostSearchedProducts = async (req, res) => {
             };
         });
 
-        res.status(200).json(formattedProducts);
+        res.status(200).json({total: totalSearches, products: formattedProducts});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -356,4 +356,42 @@ module.exports.getTotalInformations = async (req,res) =>{
       } catch (error) {
         res.status(500).json({ message: 'Error fetching total Informations', status: false });
       }
+};
+
+
+module.exports.getcategoryPourcentage = async (req, res) => {
+    try {
+        const totalProducts = await productModel.countDocuments();
+
+        const categories = await Category.aggregate([
+            {
+                $lookup: {
+                    from: "products", // The collection name for products
+                    localField: "name",
+                    foreignField: "category",
+                    as: "products"
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: 1,
+                    count: { $size: "$products" },
+                    percentage: {
+                        $cond: {
+                            if: { $eq: [totalProducts, 0] },
+                            then: 0,
+                            else: { $multiply: [{ $divide: [{ $size: "$products" }, totalProducts] }, 100] }
+                        }
+                    }
+                }
+            }
+        ]);
+
+        console.log("Category Percentages:", categories);
+        res.status(200).json({ status: true, categories: categories });
+    } catch (error) {
+        console.error("Error calculating category percentages:", error);
+        res.status(500).json({ status: false, error: error.message });
+    }
 };
